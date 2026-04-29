@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BS-FINDB-2026: Financial Database Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fcfaf8; 
+            color: #292524;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-btn.active {
+            background-color: #0369a1; 
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        .tree-line {
+            border-left: 2px solid #e7e5e4;
+            margin-left: 0.5rem;
+            padding-left: 1rem;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f5f5f4; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Chosen Palette: Warm Neutrals (Stone) with Sky Blue Accents -->
+    
+    <!-- Application Structure Plan: The SPA uses a dashboard-style tabbed layout. Since the source document is a comprehensive academic project brief, a linear read is overwhelming. The tabbed structure (Overview, Timeline, Requirements, Evaluation, Resources) chunks the information into task-oriented views. The 'Timeline' is interactive, allowing students to focus on one week at a time. The 'Evaluation' uses a chart to instantly communicate grading priorities. This structure prioritizes ease of reference, allowing a student to quickly jump to the current week's tasks or check specific technical requirements without scrolling through a long document. -->
+    
+    <!-- Visualization & Content Choices: 
+         1. Objectives & Scope -> Grid Cards & Two-Column Lists -> Goal: Inform/Organize -> Clear visual separation of what to do and what to ignore. 
+         2. Weekly Plan -> Interactive Vertical Accordion/Timeline -> Goal: Process/Organize -> Students interact to reveal weekly details, reducing cognitive load. 
+         3. Folder Structure -> HTML/CSS Tree layout -> Goal: Organize -> Visually mimics an IDE file explorer (NO SVG used). 
+         4. Assessment Criteria -> Chart.js Doughnut Chart -> Goal: Proportions/Compare -> Instantly shows the heavy weight on Design & Querying vs Report writing. 
+         Library/Method: Tailwind for layout, Vanilla JS for tab/timeline state, Chart.js for the grading chart. Confirming NO SVG or Mermaid. -->
+         
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        
+        <nav class="w-full md:w-64 bg-stone-100 border-r border-stone-200 flex-shrink-0 p-4 sticky top-0 md:h-screen overflow-y-auto">
+            <div class="mb-8 mt-2">
+                <div class="text-xs font-bold text-sky-700 uppercase tracking-wide mb-1">Business Systems (Year 1)</div>
+                <h1 class="text-xl font-bold text-stone-800 leading-tight">Financial Database Project</h1>
+                <div class="text-sm text-stone-500 mt-2 font-mono">Code: BS-FINDB-2026</div>
+            </div>
+            
+            <div class="flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 custom-scrollbar" id="nav-container">
+                <button data-target="overview" class="nav-btn active flex items-center w-full text-left px-4 py-3 rounded-lg transition-colors hover:bg-stone-200 text-sm whitespace-nowrap md:whitespace-normal">
+                    <span class="mr-3 text-lg">&#128269;</span> Overview & Scope
+                </button>
+                <button data-target="timeline" class="nav-btn flex items-center w-full text-left px-4 py-3 rounded-lg transition-colors hover:bg-stone-200 text-sm whitespace-nowrap md:whitespace-normal">
+                    <span class="mr-3 text-lg">&#128197;</span> Weekly Plan
+                </button>
+                <button data-target="requirements" class="nav-btn flex items-center w-full text-left px-4 py-3 rounded-lg transition-colors hover:bg-stone-200 text-sm whitespace-nowrap md:whitespace-normal">
+                    <span class="mr-3 text-lg">&#128194;</span> Deliverables & Report
+                </button>
+                <button data-target="evaluation" class="nav-btn flex items-center w-full text-left px-4 py-3 rounded-lg transition-colors hover:bg-stone-200 text-sm whitespace-nowrap md:whitespace-normal">
+                    <span class="mr-3 text-lg">&#9876;</span> Assessment Criteria
+                </button>
+                <button data-target="resources" class="nav-btn flex items-center w-full text-left px-4 py-3 rounded-lg transition-colors hover:bg-stone-200 text-sm whitespace-nowrap md:whitespace-normal">
+                    <span class="mr-3 text-lg">&#128218;</span> Tech Stack & Resources
+                </button>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-stone-200 hidden md:block">
+                <div class="text-xs font-semibold text-stone-500 uppercase mb-2">Project Metadata</div>
+                <div class="text-sm text-stone-700 space-y-2">
+                    <p>&#128104;&#8205;&#127979; <strong>Supervisor:</strong><br>Prof. Asen Grozdanov</p>
+                    <p>&#8987; <strong>Duration:</strong><br>5 Weeks (May 1 – Jun 5, 2026)</p>
+                    <p>&#128172; <strong>Consultations:</strong><br>4 sessions &times; 1 hr</p>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto w-full custom-scrollbar">
+            
+            <section id="overview" class="tab-content active max-w-5xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-stone-900 mb-2">Designing and Analyzing a Financial Database</h2>
+                    <p class="text-xl text-stone-600">Currency and Market Data for the Kazakhstan Context</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 mb-8">
+                    <h3 class="text-lg font-semibold text-sky-800 mb-3 flex items-center"><span class="mr-2">&#127919;</span> Background & Motivation</h3>
+                    <p class="text-stone-700 leading-relaxed mb-4">
+                        One of the most practical skills a business systems graduate can develop early on is the ability to work with structured data. Financial data is everywhere: banks use it, regulators publish it, and businesses encounter it daily. Kazakhstan presents an interesting environment for this. The National Bank of Kazakhstan (NBK) publishes official exchange rate data for the tenge (KZT) against major world currencies on a daily basis and makes it freely accessible.
+                    </p>
+                    <p class="text-stone-700 leading-relaxed">
+                        Over five weeks, you will move through the full cycle: understanding relational databases, designing a schema, populating it with real data from NBK, and running analytical queries. The project is intentionally scoped to be achievable locally without cloud accounts.
+                    </p>
+                </div>
+
+                <h3 class="text-xl font-bold text-stone-800 mb-4 border-b border-stone-200 pb-2">Learning Objectives</h3>
+                <p class="text-sm text-stone-500 mb-4">By the end of the project, you should be able to:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                    <div class="bg-sky-50 p-4 rounded-lg border border-sky-100 flex items-start">
+                        <span class="text-sky-600 font-bold mr-3 mt-1">1</span>
+                        <p class="text-sm text-stone-800">Explain core concepts of relational databases (tables, primary/foreign keys, normalization) without looking them up.</p>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-lg border border-sky-100 flex items-start">
+                        <span class="text-sky-600 font-bold mr-3 mt-1">2</span>
+                        <p class="text-sm text-stone-800">Draw and justify a simple Entity-Relationship (ER) diagram for a defined business problem.</p>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-lg border border-sky-100 flex items-start">
+                        <span class="text-sky-600 font-bold mr-3 mt-1">3</span>
+                        <p class="text-sm text-stone-800">Write SQL queries of moderate complexity (SELECT with JOINs, GROUP BY, aggregate functions, date filtering).</p>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-lg border border-sky-100 flex items-start">
+                        <span class="text-sky-600 font-bold mr-3 mt-1">4</span>
+                        <p class="text-sm text-stone-800">Retrieve structured data from a public financial source (NBK API) and load it into a local database.</p>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-lg border border-sky-100 flex items-start">
+                        <span class="text-sky-600 font-bold mr-3 mt-1">5</span>
+                        <p class="text-sm text-stone-800">Perform basic financial data analysis (trends, volatility) using SQL and optionally Python (pandas).</p>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-lg border border-sky-100 flex items-start">
+                        <span class="text-sky-600 font-bold mr-3 mt-1">6</span>
+                        <p class="text-sm text-stone-800">Produce a written technical report documenting design decisions clearly for reproducibility.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-800 mb-3 flex items-center"><span class="text-emerald-600 mr-2">&#10004;</span> In Scope</h3>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-stone-700 bg-white p-3 rounded shadow-sm border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Design of a relational database schema (2–4 tables)</li>
+                            <li class="flex items-center text-sm text-stone-700 bg-white p-3 rounded shadow-sm border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Data sourcing from NBK open data</li>
+                            <li class="flex items-center text-sm text-stone-700 bg-white p-3 rounded shadow-sm border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Data loading via CSV import or Python script</li>
+                            <li class="flex items-center text-sm text-stone-700 bg-white p-3 rounded shadow-sm border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> SQL query writing and analysis</li>
+                            <li class="flex items-center text-sm text-stone-700 bg-white p-3 rounded shadow-sm border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Short written report and ER diagram</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-800 mb-3 flex items-center"><span class="text-rose-600 mr-2">&#10006;</span> Out of Scope</h3>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-stone-700 bg-stone-50 p-3 rounded border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Web applications or dashboards</li>
+                            <li class="flex items-center text-sm text-stone-700 bg-stone-50 p-3 rounded border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Real-time data streaming</li>
+                            <li class="flex items-center text-sm text-stone-700 bg-stone-50 p-3 rounded border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Machine learning or forecasting models</li>
+                            <li class="flex items-center text-sm text-stone-700 bg-stone-50 p-3 rounded border border-stone-100"><span class="text-stone-400 mr-2">&#9642;</span> Connecting to KASE trading systems</li>
+                        </ul>
+                        <p class="text-xs text-stone-500 mt-3 italic">These topics are suitable for follow-up projects, but stretching the timeline now is unreasonable.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="timeline" class="tab-content max-w-5xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-stone-900">Weekly Work Plan</h2>
+                    <p class="text-stone-600 mt-1">Select a week to view detailed tasks and deliverables. The five weeks build directly on each other.</p>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="w-full lg:w-1/3 flex flex-col gap-2" id="timeline-controls">
+                    </div>
+
+                    <div class="w-full lg:w-2/3">
+                        <div id="timeline-display" class="bg-white p-6 md:p-8 rounded-xl shadow-md border border-stone-200 min-h-[400px]">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-10 bg-stone-50 p-5 rounded-lg border border-stone-200">
+                    <h3 class="font-bold text-stone-800 mb-3 flex items-center"><span class="mr-2">&#128101;</span> Consultation Schedule Summary</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-stone-600">
+                            <thead class="text-xs text-stone-700 uppercase bg-stone-200">
+                                <tr>
+                                    <th class="px-4 py-2">Session</th>
+                                    <th class="px-4 py-2">Date (8:00 PM Almaty)</th>
+                                    <th class="px-4 py-2">Main Focus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-stone-200"><td class="px-4 py-2 font-medium">Session 1</td><td class="px-4 py-2">May 1, 2026</td><td class="px-4 py-2">Project kickoff, setup check, clarify scope</td></tr>
+                                <tr class="border-b border-stone-200"><td class="px-4 py-2 font-medium">Session 2</td><td class="px-4 py-2">May 8, 2026</td><td class="px-4 py-2">Schema review, normalization discussion</td></tr>
+                                <tr class="border-b border-stone-200"><td class="px-4 py-2 font-medium">Session 3</td><td class="px-4 py-2">May 15, 2026</td><td class="px-4 py-2">Data loading issues, query planning</td></tr>
+                                <tr><td class="px-4 py-2 font-medium">Session 4</td><td class="px-4 py-2">May 29, 2026</td><td class="px-4 py-2">Report draft review, findings discussion</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="requirements" class="tab-content max-w-5xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-stone-900">Deliverables & Report Structure</h2>
+                    <p class="text-stone-600 mt-1">Due Date: June 5, 2026, 11:59 PM Almaty Time via program portal.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-800 mb-4 border-b border-stone-200 pb-2">Files to Submit (Folder Structure)</h3>
+                        <p class="text-sm text-stone-600 mb-4">All files should be organized in a single folder, zipped.</p>
+                        
+                        <div class="bg-stone-900 text-stone-300 p-5 rounded-lg font-mono text-sm shadow-inner overflow-x-auto">
+                            <div>&#128194; <span class="text-white font-bold">BS_FINDB_2026_[StudentID]</span></div>
+                            <div class="tree-line border-stone-700">
+                                <div class="mt-2">&#128193; <span class="text-sky-300">sql</span></div>
+                                <div class="tree-line border-stone-700">
+                                    <div class="py-1">&#128196; 01_schema_create.sql</div>
+                                    <div class="py-1">&#128196; 02_queries_analysis.sql</div>
+                                </div>
+                                
+                                <div class="mt-2">&#128193; <span class="text-sky-300">scripts</span></div>
+                                <div class="tree-line border-stone-700">
+                                    <div class="py-1"><span class="text-yellow-400">&#128013;</span> fetch_nbk_rates.py</div>
+                                </div>
+                                
+                                <div class="mt-2">&#128193; <span class="text-sky-300">data</span></div>
+                                <div class="tree-line border-stone-700">
+                                    <div class="py-1 text-stone-400 flex items-center justify-between">
+                                        <span>&#128202; exchange_rates_raw.csv</span> 
+                                        <span class="text-xs italic ml-4">&larr; raw data before loading</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">&#128193; <span class="text-sky-300">diagrams</span></div>
+                                <div class="tree-line border-stone-700">
+                                    <div class="py-1">&#128444;&#65039; er_diagram_final.png</div>
+                                </div>
+                                
+                                <div class="mt-2 text-stone-400 flex items-center justify-between">
+                                    <span>&#128196; <span class="text-stone-200">report.pdf</span> <span class="text-xs">(or .docx)</span></span>
+                                </div>
+                                <div class="mt-2 text-stone-400 flex items-center justify-between">
+                                    <span>&#128196; <span class="text-stone-200">README.txt</span></span>
+                                    <span class="text-xs italic ml-4">&larr; brief guide to what each file is</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-800 mb-4 border-b border-stone-200 pb-2">Report Sections (2,000–3,500 words)</h3>
+                        <p class="text-sm text-stone-600 mb-4">A technical document requiring clear structure and precise language.</p>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm relative pl-12">
+                                <span class="absolute left-4 top-4 w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">1</span>
+                                <h4 class="font-bold text-stone-800 text-sm">Introduction</h4>
+                                <p class="text-xs text-stone-600 mt-1">What is the project about and why does it matter? Be specific.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm relative pl-12">
+                                <span class="absolute left-4 top-4 w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">2</span>
+                                <h4 class="font-bold text-stone-800 text-sm">Data Source and Collection</h4>
+                                <p class="text-xs text-stone-600 mt-1">Where data comes from, NBK API returns, retrieval methods, and handling of data quality issues.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm relative pl-12">
+                                <span class="absolute left-4 top-4 w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">3</span>
+                                <h4 class="font-bold text-stone-800 text-sm">Database Design</h4>
+                                <p class="text-xs text-stone-600 mt-1">Present ER diagram. Justify tables, relationships, and normalization decisions.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm relative pl-12">
+                                <span class="absolute left-4 top-4 w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">4</span>
+                                <h4 class="font-bold text-stone-800 text-sm">SQL Analysis <span class="font-normal text-stone-500">(Longest section)</span></h4>
+                                <p class="text-xs text-stone-600 mt-1">For each query: state business question, show formatted SQL, show sample output, interpret result.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm relative pl-12">
+                                <span class="absolute left-4 top-4 w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">5</span>
+                                <h4 class="font-bold text-stone-800 text-sm">Key Findings</h4>
+                                <p class="text-xs text-stone-600 mt-1">Meaningful takeaways about KZT exchange rate behavior in the past 12 months based on your data.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm relative pl-12">
+                                <span class="absolute left-4 top-4 w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">6</span>
+                                <h4 class="font-bold text-stone-800 text-sm">Reflections, Next Steps & References</h4>
+                                <p class="text-xs text-stone-600 mt-1">What to do differently, unanswered questions, and citations for tools/tutorials.</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                            <strong>A note on writing:</strong> Write in your own voice. Be precise rather than overly academic. If a decision was made for pragmatic reasons, state it honestly.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="evaluation" class="tab-content max-w-5xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-stone-900">Assessment Criteria & Academic Integrity</h2>
+                    <p class="text-stone-600 mt-1">How your final submission will be graded, highlighting the focus on technical execution and clear analysis.</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-8 items-center bg-white p-6 md:p-8 rounded-xl shadow-sm border border-stone-200">
+                    <div class="w-full md:w-1/2">
+                        <div class="chart-container">
+                            <canvas id="gradingChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-1/2 space-y-4">
+                        <div class="p-3 rounded border border-stone-100 hover:bg-stone-50 transition-colors">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-stone-800 flex items-center"><span class="w-3 h-3 rounded-full bg-[#0ea5e9] mr-2"></span> Database Design</span>
+                                <span class="font-bold text-[#0ea5e9]">25%</span>
+                            </div>
+                            <p class="text-xs text-stone-600">Is the schema logical? Are normalization principles applied correctly? Are constraints appropriate?</p>
+                        </div>
+                        
+                        <div class="p-3 rounded border border-stone-100 hover:bg-stone-50 transition-colors">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-stone-800 flex items-center"><span class="w-3 h-3 rounded-full bg-[#8b5cf6] mr-2"></span> SQL Query Quality</span>
+                                <span class="font-bold text-[#8b5cf6]">25%</span>
+                            </div>
+                            <p class="text-xs text-stone-600">Are queries correct? Do they answer the stated question? Is SQL style clear and readable?</p>
+                        </div>
+                        
+                        <div class="p-3 rounded border border-stone-100 hover:bg-stone-50 transition-colors">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-stone-800 flex items-center"><span class="w-3 h-3 rounded-full bg-[#f59e0b] mr-2"></span> Data Collection & Loading</span>
+                                <span class="font-bold text-[#f59e0b]">20%</span>
+                            </div>
+                            <p class="text-xs text-stone-600">Is the Python script functional and readable? Is the data complete and correctly loaded?</p>
+                        </div>
+                        
+                        <div class="p-3 rounded border border-stone-100 hover:bg-stone-50 transition-colors">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-stone-800 flex items-center"><span class="w-3 h-3 rounded-full bg-[#10b981] mr-2"></span> Analysis and Interpretation</span>
+                                <span class="font-bold text-[#10b981]">20%</span>
+                            </div>
+                            <p class="text-xs text-stone-600">Are findings interpreted meaningfully, not just restated as numbers?</p>
+                        </div>
+
+                        <div class="p-3 rounded border border-stone-100 hover:bg-stone-50 transition-colors">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-stone-800 flex items-center"><span class="w-3 h-3 rounded-full bg-[#64748b] mr-2"></span> Report Clarity</span>
+                                <span class="font-bold text-[#64748b]">10%</span>
+                            </div>
+                            <p class="text-xs text-stone-600">Is the report well-organized, precise, and complete?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-red-50 p-6 rounded-lg border border-red-100">
+                    <h3 class="text-lg font-bold text-red-800 mb-2 flex items-center"><span class="mr-2">&#9888;&#65039;</span> Academic Integrity</h3>
+                    <p class="text-sm text-red-900 leading-relaxed mb-3">
+                        All code and SQL submitted must be your own work. You are permitted and encouraged to use documentation and tutorials. If a snippet is adapted (e.g., from Stack Overflow), note it with a comment in the code.
+                    </p>
+                    <p class="text-sm font-semibold text-red-900">
+                        Crucial: Submitting code that you cannot explain verbally is a problem regardless of its source. Be prepared to walk through your schema or Python script during consultation sessions.
+                    </p>
+                </div>
+            </section>
+
+            <section id="resources" class="tab-content max-w-5xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-stone-900">Technology Stack & Resources</h2>
+                    <p class="text-stone-600 mt-1">All tools are free, open-source, and accessible locally without VPN.</p>
+                </div>
+
+                <h3 class="text-lg font-bold text-stone-800 mb-4 border-b border-stone-200 pb-2">Tooling</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+                    <div class="bg-white border border-stone-200 p-4 rounded-lg flex flex-col h-full shadow-sm">
+                        <div class="font-bold text-stone-800 text-lg mb-1">PostgreSQL 16</div>
+                        <div class="text-xs text-sky-600 font-semibold mb-2">Main database engine</div>
+                        <div class="mt-auto text-xs text-stone-500 break-all">postgresql.org/download/</div>
+                    </div>
+                    <div class="bg-white border border-stone-200 p-4 rounded-lg flex flex-col h-full shadow-sm">
+                        <div class="font-bold text-stone-800 text-lg mb-1">DBeaver Community</div>
+                        <div class="text-xs text-sky-600 font-semibold mb-2">DB GUI (Queries, ER diagrams)</div>
+                        <div class="mt-auto text-xs text-stone-500 break-all">dbeaver.io/download/</div>
+                    </div>
+                    <div class="bg-white border border-stone-200 p-4 rounded-lg flex flex-col h-full shadow-sm">
+                        <div class="font-bold text-stone-800 text-lg mb-1">Python 3.11+</div>
+                        <div class="text-xs text-sky-600 font-semibold mb-2">Data loading scripts</div>
+                        <div class="mt-auto text-xs text-stone-500 break-all">python.org/downloads/</div>
+                    </div>
+                    <div class="bg-white border border-stone-200 p-4 rounded-lg flex flex-col h-full shadow-sm">
+                        <div class="font-bold text-stone-800 text-lg mb-1">pandas</div>
+                        <div class="text-xs text-sky-600 font-semibold mb-2">Data manipulation lib</div>
+                        <div class="mt-auto text-xs text-stone-500 break-all">Install via pip</div>
+                    </div>
+                    <div class="bg-white border border-stone-200 p-4 rounded-lg flex flex-col h-full shadow-sm">
+                        <div class="font-bold text-stone-800 text-lg mb-1">VS Code</div>
+                        <div class="text-xs text-sky-600 font-semibold mb-2">Text / script editor</div>
+                        <div class="mt-auto text-xs text-stone-500 break-all">code.visualstudio.com</div>
+                    </div>
+                    <div class="bg-white border border-stone-200 p-4 rounded-lg flex flex-col h-full shadow-sm">
+                        <div class="font-bold text-stone-800 text-lg mb-1">Git</div>
+                        <div class="text-xs text-sky-600 font-semibold mb-2">Version control</div>
+                        <div class="mt-auto text-xs text-stone-500 break-all">git-scm.com</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-800 mb-4 border-b border-stone-200 pb-2">Primary Data Sources</h3>
+                        <ul class="space-y-3">
+                            <li class="bg-white p-3 border border-stone-200 rounded">
+                                <div class="font-semibold text-stone-800 text-sm">National Bank of Kazakhstan</div>
+                                <div class="text-xs text-stone-500 mt-1">Exchange Rates Dynamic Webpage</div>
+                                <a href="#" class="text-xs text-sky-600 hover:underline break-all">nationalbank.kz/en/rates/ratesdynamic</a>
+                            </li>
+                            <li class="bg-white p-3 border border-stone-200 rounded">
+                                <div class="font-semibold text-stone-800 text-sm">NBK API Endpoint</div>
+                                <div class="text-xs text-stone-500 mt-1">Returns XML data for a given date</div>
+                                <code class="text-xs bg-stone-100 p-1 rounded mt-1 block break-all">nationalbank.kz/rss/get_rates.cfm?fdate=DD.MM.YYYY</code>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-800 mb-4 border-b border-stone-200 pb-2">Learning Materials</h3>
+                        <ul class="space-y-2 text-sm text-stone-700">
+                            <li class="flex items-start"><span class="mr-2">&#128214;</span> <div><strong>Learning SQL</strong> by Alan Beaulieu (Open Library)</div></li>
+                            <li class="flex items-start"><span class="mr-2">&#128214;</span> <div><strong>SQL for Data Analysis</strong> by Cathy Tanimura (O'Reilly)</div></li>
+                            <li class="flex items-start"><span class="mr-2">&#128279;</span> <div><strong>PostgreSQL Docs:</strong> postgresql.org/docs/current/</div></li>
+                            <li class="flex items-start"><span class="mr-2">&#128279;</span> <div><strong>Normalization Guide:</strong> vertabelo.com/blog/</div></li>
+                            <li class="flex items-start"><span class="mr-2">&#128279;</span> <div><strong>pandas Docs:</strong> pandas.pydata.org/docs/</div></li>
+                            <li class="flex items-start"><span class="mr-2">&#128279;</span> <div><strong>W3Schools SQL:</strong> w3schools.com/sql/</div></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const timelineData = [
+            {
+                week: 1,
+                title: "Foundations and Setup",
+                dates: "May 1–7, 2026",
+                session: "Consultation 1: May 1 @ 8:00 PM",
+                tasks: [
+                    "Install/configure PostgreSQL and DBeaver. Create test DB and run basic queries.",
+                    "Read chapters 1–3 of 'Learning SQL' by Alan Beaulieu (relational model, basic syntax).",
+                    "Browse NBK website. Download sample exchange rate file to understand structure.",
+                    "Draft first version of ER diagram (paper is fine) identifying entities and relations."
+                ],
+                deliverable: "Working PostgreSQL installation, first draft ER diagram, one-page note explaining data source fields."
+            },
+            {
+                week: 2,
+                title: "Database Design & Data Modeling",
+                dates: "May 8–14, 2026",
+                session: "Consultation 2: May 8 @ 8:00 PM",
+                tasks: [
+                    "Finalize database schema (currencies, exchange_rates, nbk_base_rate optionally).",
+                    "Learn about normalization (1NF, 2NF, 3NF). Understand why we split data.",
+                    "Write CREATE TABLE statements in DBeaver. Add PKs, FKs, NOT NULL, and UNIQUE constraints."
+                ],
+                deliverable: "Final ER diagram, SQL CREATE TABLE script (.sql), half-page explanation of normalization choices."
+            },
+            {
+                week: 3,
+                title: "Data Collection and Loading",
+                dates: "May 15–21, 2026",
+                session: "Consultation 3: May 15 @ 8:00 PM",
+                tasks: [
+                    "Write Python script using requests/xml.etree to fetch NBK API data.",
+                    "Parse XML response, handle date inputs, write results to a CSV.",
+                    "Collect last 12 months data (May 2025–Apr 2026) for 5 currencies (USD, EUR, RUB, CNY, GBP).",
+                    "Load CSV into PostgreSQL. Handle data quality issues (missing weekends/holidays)."
+                ],
+                deliverable: "Python script (.py), loaded DB with 12 months of data, brief note on data quality handling."
+            },
+            {
+                week: 4,
+                title: "SQL Analysis and Querying",
+                dates: "May 22–28, 2026",
+                session: "No session this week — Focus on analysis.",
+                tasks: [
+                    "Write queries for at least 5 business questions:",
+                    "1. Average USD/KZT rate per month.",
+                    "2. Highest and lowest USD/KZT dates.",
+                    "3. MoM % change in EUR/KZT.",
+                    "4. Days KZT/USD moved >1% vs previous day.",
+                    "5. Greatest depreciation of tenge over 12 months.",
+                    "6. Standard deviation of USD/KZT per quarter.",
+                    "7. Compare RUB/KZT H1 vs H2 2025.",
+                    "(Optional) Export to Jupyter for Pandas plotting."
+                ],
+                deliverable: "A .sql file with queries/comments, and a paragraph interpreting each result."
+            },
+            {
+                week: 5,
+                title: "Report Writing and Wrap-Up",
+                dates: "May 29 – June 5, 2026",
+                session: "Consultation 4: May 29 @ 8:00 PM",
+                tasks: [
+                    "Write project report based on provided structure.",
+                    "Review and clean up all project files (scripts, SQL, diagrams).",
+                    "Prepare short verbal summary (5 mins) of most interesting finding."
+                ],
+                deliverable: "Submit all files zipped via portal by June 5, 2026, 11:59 PM."
+            }
+        ];
+
+        let chartInstance = null;
+        let chartRendered = false;
+
+        function initNavigation() {
+            const buttons = document.querySelectorAll('.nav-btn');
+            const contents = document.querySelectorAll('.tab-content');
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => {
+                        b.classList.remove('active', 'bg-[#0369a1]', 'text-white', 'font-semibold');
+                        b.classList.add('hover:bg-stone-200');
+                    });
+                    
+                    btn.classList.add('active', 'bg-[#0369a1]', 'text-white', 'font-semibold');
+                    btn.classList.remove('hover:bg-stone-200');
+
+                    const targetId = btn.getAttribute('data-target');
+                    contents.forEach(c => c.classList.remove('active'));
+                    document.getElementById(targetId).classList.add('active');
+
+                    if (targetId === 'evaluation' && !chartRendered) {
+                        renderChart();
+                        chartRendered = true;
+                    }
+                });
+            });
+            
+            const firstBtn = document.querySelector('.nav-btn');
+            if(firstBtn) {
+                firstBtn.classList.remove('hover:bg-stone-200');
+                firstBtn.classList.add('bg-[#0369a1]', 'text-white', 'font-semibold');
+            }
+        }
+
+        function renderTimeline() {
+            const controlsContainer = document.getElementById('timeline-controls');
+            const displayContainer = document.getElementById('timeline-display');
+
+            timelineData.forEach((week, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-lg border-2 transition-all ${index === 0 ? 'border-sky-500 bg-sky-50 shadow-sm' : 'border-stone-200 bg-white hover:border-sky-300'}`;
+                btn.innerHTML = `
+                    <div class="font-bold text-stone-800">Week ${week.week}</div>
+                    <div class="text-sm font-semibold ${index === 0 ? 'text-sky-700' : 'text-stone-500'}">${week.title}</div>
+                    <div class="text-xs text-stone-400 mt-1">${week.dates}</div>
+                `;
+                
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#timeline-controls button').forEach(b => {
+                        b.className = 'w-full text-left p-4 rounded-lg border-2 border-stone-200 bg-white hover:border-sky-300 transition-all';
+                        b.querySelector('div:nth-child(2)').classList.replace('text-sky-700', 'text-stone-500');
+                    });
+                    btn.className = 'w-full text-left p-4 rounded-lg border-2 border-sky-500 bg-sky-50 shadow-sm transition-all';
+                    btn.querySelector('div:nth-child(2)').classList.replace('text-stone-500', 'text-sky-700');
+                    updateTimelineDisplay(week, displayContainer);
+                });
+                
+                controlsContainer.appendChild(btn);
+            });
+
+            updateTimelineDisplay(timelineData[0], displayContainer);
+        }
+
+        function updateTimelineDisplay(weekData, container) {
+            container.style.opacity = 0;
+            
+            setTimeout(() => {
+                const tasksHtml = weekData.tasks.map(t => `<li class="flex items-start mb-2"><span class="text-sky-500 mr-2">&#10148;</span><span class="text-stone-700 text-sm">${t}</span></li>`).join('');
+                
+                container.innerHTML = `
+                    <div class="flex justify-between items-start mb-4 border-b border-stone-100 pb-4">
+                        <div>
+                            <div class="text-xs font-bold uppercase tracking-wider text-sky-600 mb-1">Week ${weekData.week}</div>
+                            <h3 class="text-2xl font-bold text-stone-800">${weekData.title}</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-medium text-stone-500">${weekData.dates}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6 bg-stone-50 p-3 rounded border border-stone-200 text-sm font-medium text-stone-700 flex items-center">
+                        <span class="text-lg mr-2">&#128187;</span> ${weekData.session}
+                    </div>
+                    
+                    <h4 class="font-bold text-stone-800 mb-3 text-lg">Tasks</h4>
+                    <ul class="mb-8 pl-1">
+                        ${tasksHtml}
+                    </ul>
+                    
+                    <div class="bg-sky-50 border border-sky-200 p-4 rounded-lg">
+                        <h4 class="font-bold text-sky-900 mb-1 text-sm uppercase tracking-wide">End of Week Deliverable</h4>
+                        <p class="text-sky-800 text-sm">${weekData.deliverable}</p>
+                    </div>
+                `;
+                
+                container.style.transition = 'opacity 0.3s ease';
+                container.style.opacity = 1;
+            }, 50);
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('gradingChart').getContext('2d');
+            
+            const data = {
+                labels: ['Database Design', 'SQL Queries', 'Data Loading', 'Analysis', 'Report'],
+                datasets: [{
+                    data: [25, 25, 20, 20, 10],
+                    backgroundColor: [
+                        '#0ea5e9', 
+                        '#8b5cf6', 
+                        '#f59e0b', 
+                        '#10b981', 
+                        '#64748b'  
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            };
+
+            const config = {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + context.parsed + '%';
+                                }
+                            },
+                            padding: 10,
+                            titleFont: { size: 13, family: "'Inter', sans-serif" },
+                            bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                            displayColors: true,
+                            backgroundColor: 'rgba(28, 25, 23, 0.9)'
+                        }
+                    },
+                    cutout: '65%'
+                }
+            };
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            chartInstance = new Chart(ctx, config);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initNavigation();
+            renderTimeline();
+        });
+    </script>
+</body>
+</html>
+
